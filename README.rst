@@ -5,6 +5,9 @@ django-attachments
 django-attachments is a generic set of template tags to attach any kind of
 files to models.
 
+This version differs from the original one by bartTC by adding the ``tag`` concept.
+Every attachment may have a tag field which gives info on the attachment.
+
 Installation:
 =============
 
@@ -111,6 +114,12 @@ for your model objects in your frontend.
    give n attachment's creator is the current logged in user or the user has the 
    ``delete_foreign_attachments`` permission.
 
+4. ``get_attachment_with_tag``: Retrives the attachment labeled with certain tag
+    for the given model istance. You can optionally define a variable name in which the
+    attachment is stored in the template context. The default context varialbe is the
+    tag itself. Example::
+    {% get_attachment_with_tag this_user "avatar" as "avatar" %}
+
 Quick Example:
 ==============
 
@@ -161,15 +170,13 @@ Finally, create the Attachment object and save it, and close the file handle::
 Changelog:
 ==========
 
-v0.3.1 (2009-07-29):
+v0.0.1 (2010-06-15):
 
-    * Added a note to the README that you should secure your static files.
+    * Forked from bartTC github. Added first edits.
+    * Added Italian translation
 
-v0.3 (2009-07-22):
 
-    * This version adds more granular control about user permissons. You need
-      to explicitly add permissions to users who should been able to upload,
-      delete or delete foreign attachments. 
+Todo:
+=====
 
-      This might be **backwards incompatible** as you did not need to assign add/delete
-      permissions before!
+ * Add the ability to force a tag to be unique

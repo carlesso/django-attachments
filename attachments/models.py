@@ -7,6 +7,17 @@ from django.contrib.contenttypes import generic
 from django.utils.translation import ugettext_lazy as _
 
 class AttachmentManager(models.Manager):
+    def get_for_tag(self, obj, tag):
+        object_type = ContentType.objects.get_for_model(obj)
+        print tag
+        print self.filter(content_type__pk = object_type.id, object_id = obj.id)
+        try:
+            return self.get(content_type__pk = object_type.id,
+                            object_id = obj.id,
+                            tag = tag)
+        except: # Maybe DoesNotExist is more appropiate?
+            return False
+
     def attachments_for_object(self, obj):
         object_type = ContentType.objects.get_for_model(obj)
         return self.filter(content_type__pk=object_type.id,
@@ -28,6 +39,7 @@ class Attachment(models.Model):
     content_object = generic.GenericForeignKey('content_type', 'object_id')
     creator = models.ForeignKey(User, related_name="created_attachments", verbose_name=_('creator'))
     attachment_file = models.FileField(_('attachment'), upload_to=attachment_upload)
+    tag = models.CharField(max_length = 30, null = True, blank = True)
     created = models.DateTimeField(_('created'), auto_now_add=True)
     modified = models.DateTimeField(_('modified'), auto_now=True)
 

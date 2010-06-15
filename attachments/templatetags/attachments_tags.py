@@ -65,6 +65,28 @@ class AttachmentsForObjectNode(Node):
         context[var_name] = Attachment.objects.attachments_for_object(obj)
         return ''
 
+class AttachmentWithTagForObjectNode(Node):
+    def __init__(self, obj, tag, var_name):
+        self.obj = obj
+        self.tag = tag
+        self.var_name = var_name
+
+    def resolve(self, var, context):
+        """Resolves a variable out of context if it's not in quotes"""
+        if var[0] in ('"', "'") and var[-1] == var[0]:
+            return var[1:-1]
+        else:
+            return Variable(var).resolve(context)
+
+    def render(self, context):
+        obj = self.resolve(self.obj, context)
+        tag = self.resolve(self.tag, context)
+        var_name = self.resolve(self.var_name, context)
+        print self.tag
+        context[var_name] = Attachment.objects.get_for_tag(obj, tag)
+        return ''
+
+
 @register.tag
 def get_attachments_for(parser, token):
     """
@@ -94,3 +116,41 @@ def get_attachments_for(parser, token):
         'var_name': next_bit_for(bits, 'as', '"attachments"'),
     }
     return AttachmentsForObjectNode(**args)
+
+@register.tag
+def get_attachment_with_tag(parser, token):
+    """
+    Retrive attachment with tag that is attached to a given object. You can specify
+    the variable name in the context the attachments are stored using the `as`
+    argument. Default context variable name is `attachment`.
+
+    Syntax::
+
+        {% get_attachment_with_tag obj tag %}
+        {{ attachments }}
+
+        {% get_attachments_with_tag obj tag as "my_attachment" %}
+
+    """
+    # def next_bit_for(bits, key, if_none=None):
+    #     print bits
+    #     try:
+    #         return bits[bits.index(key)+1]
+    #     except ValueError:
+    #         return if_none
+
+    # bits = token.contents.split()
+    # args = {
+    #     'obj': next_bit_for(bits, 'get_attachment_with_tag'),
+    #     'tag': next_bit_for(bits, 'obj'),
+    #     'var_name': next_bit_for(bits, 'as', '"attachments"'),
+    # }
+    # print args
+    bits = token.contents.split()
+    args = {
+        'obj': bits[1],
+        'tag': bits[2],
+        'var_name': bits[4] if len(bits) > 3 else bits[2]
+        }
+    print args
+    return AttachmentWithTagForObjectNode(**args)

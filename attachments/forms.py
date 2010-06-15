@@ -5,10 +5,11 @@ from attachments.models import Attachment
 
 class AttachmentForm(forms.ModelForm):
     attachment_file = forms.FileField(label=_('Upload attachment'))
+    tag = forms.CharField(label = _('Tag: (optional)'), max_length = 30)
 
     class Meta:
         model = Attachment
-        fields = ('attachment_file',)
+        fields = ('attachment_file', 'tag',)
 
     def save(self, request, obj, *args, **kwargs):
         self.instance.creator = request.user
