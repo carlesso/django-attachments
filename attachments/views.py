@@ -8,6 +8,7 @@ from django.template.context import RequestContext
 from django.contrib.auth.decorators import login_required
 from attachments.models import Attachment
 from attachments.forms import AttachmentForm
+from django.contrib.contenttypes.models import ContentType
 
 def add_url_for_obj(obj):
     return reverse('add_attachment', kwargs={
@@ -29,6 +30,10 @@ def add_attachment(request, app_label, module_name, pk,
     form = AttachmentForm(request.POST, request.FILES)
 
     if form.is_valid():
+        if form.cleaned_data['tag']:
+            a = Attachment.objects.filter(tag = form.cleaned_data['tag'], object_id = obj.id, content_type = ContentType.objects.get_for_model(obj))
+            for old_item in a:
+                old_item.delete()
         form.save(request, obj)
         request.user.message_set.create(message=ugettext('Your attachment was uploaded.'))
         return HttpResponseRedirect(next)

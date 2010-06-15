@@ -16,3 +16,17 @@ class AttachmentForm(forms.ModelForm):
         self.instance.content_type = ContentType.objects.get_for_model(obj)
         self.instance.object_id = obj.id
         super(AttachmentForm, self).save(*args, **kwargs)
+
+class AttachmentFormWithTag(forms.ModelForm):
+    attachment_file = forms.FileField(label=_('Upload attachment'))
+    tag = forms.CharField(widget = forms.HiddenInput)
+
+    class Meta:
+        model = Attachment
+        fields = ('attachment_file',)
+
+    def save(self, request, obj, *args, **kwargs):
+        self.instance.creator = request.user
+        self.instance.content_type = ContentType.objects.get_for_model(obj)
+        self.instance.object_id = obj.id
+        super(AttachmentForm, self).save(*args, **kwargs)

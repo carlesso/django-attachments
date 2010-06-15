@@ -1,5 +1,5 @@
-from django.template import Library, Node, Variable
-from attachments.forms import AttachmentForm
+from django.template import Library, Node, Variable, VariableDoesNotExist
+from attachments.forms import AttachmentForm, AttachmentFormWithTag
 from attachments.views import add_url_for_obj
 from django.core.urlresolvers import reverse
 from attachments.models import Attachment
@@ -11,19 +11,51 @@ def attachment_form(context, obj):
     """
     Renders a "upload attachment" form.
     
+    If "next" is set in the context will be used as redirect after upload.
+
     The user must own ``attachments.add_attachment permission`` to add
     attachments.
     """
+    try:
+        next = Variable('next').resolve(context)
+    except VariableDoesNotExist:
+        next = context['request'].build_absolute_uri(),
     if context['user'].has_perm('attachments.add_attachment'):
         return {
             'form': AttachmentForm(),
             'form_url': add_url_for_obj(obj),
-            'next': context['request'].build_absolute_uri(),
+            'next': next,
         }
     else:
         return {
             'form': None,
         }
+
+@register.inclusion_tag('attachments/add_form.html', takes_context=True)
+def attachment_form_with_tag(context, obj, tag):
+    """
+    Renders a "upload attachment" form whith and hidden field for tag.
+
+    If "next" is set in the context will be used as redirect after upload.
+    
+    The user must own ``attachments.add_attachment permission`` to add
+    attachments.
+    """
+    try:
+        next = Variable('next').resolve(context)
+    except VariableDoesNotExist:
+        next = context['request'].build_absolute_uri(),
+    if context['user'].has_perm('attachments.add_attachment'):
+        return {
+            'form': AttachmentFormWithTag(initial = {'tag': tag}),
+            'form_url': add_url_for_obj(obj),
+            'next': next,
+        }
+    else:
+        return {
+            'form': None,
+        }
+
 
 @register.inclusion_tag('attachments/delete_link.html', takes_context=True)
 def attachment_delete_link(context, attachment):

@@ -39,6 +39,7 @@ class Attachment(models.Model):
     content_object = generic.GenericForeignKey('content_type', 'object_id')
     creator = models.ForeignKey(User, related_name="created_attachments", verbose_name=_('creator'))
     attachment_file = models.FileField(_('attachment'), upload_to=attachment_upload)
+
     tag = models.CharField(max_length = 30, null = True, blank = True)
     created = models.DateTimeField(_('created'), auto_now_add=True)
     modified = models.DateTimeField(_('modified'), auto_now=True)
@@ -50,6 +51,8 @@ class Attachment(models.Model):
         )
 
     def __unicode__(self):
+        if self.tag:
+            return '%s attached %s (%s)' % (self.creator.username, self.attachment_file.name, self.tag)
         return '%s attached %s' % (self.creator.username, self.attachment_file.name)
 
     @property
